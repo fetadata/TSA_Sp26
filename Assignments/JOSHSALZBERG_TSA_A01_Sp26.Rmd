@@ -19,7 +19,7 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 Q1. What are your previous experiences with time series analysis, R, and Git? 
 
-> Answer: None
+> Answer: I took ENVIRON872, Environmental Data Analysis in Fall 2025. 8 years ago in undergrad, I took a course on social media data mining in R, but I forgot most of that by the time I took 872
 
 
 Q2. For this part we just want to see the path to your R project. No need to do anything. The output will be automatically generated once you knit you file. 
@@ -32,4 +32,4 @@ getwd()
 
 Q3. Copy and paste the link to your forked repository on Github. It should looks like this: "https://github.com/lmmlima/TSA_Sp26"
 
-> Answer: 
+> Answer: https://github.com/fetadata/TSA_Sp26
