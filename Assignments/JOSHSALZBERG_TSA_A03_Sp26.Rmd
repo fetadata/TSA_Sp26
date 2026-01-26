@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2025"
 subtitle: "Assignment 3 - Due date 02/03/26"
-author: "Student Name"
+author: "Josh Salzberg"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -40,6 +40,19 @@ R packages needed for this assignment:"forecast","tseries", and "Kendall". Insta
 
 ```{r}
 #Load/install required package here
+library("forecast")
+library("tseries")
+library("Kendall")
+library("tidyverse")
+library("here")
+
+# Reading in energy data
+energydata <- read.csv(here("Data", "Processed","jhs_clean_energy_data.csv"))
+# Selecting energy data
+A3data <- energydata %>% 
+  select(Total.Renewable.Energy.Production, Hydroelectric.Power.Consumption)
+# convert to time series object
+A3ts <- ts(A3data, start = c(1973, 1), frequency = 12)
 
 ```
 
@@ -49,13 +62,38 @@ R packages needed for this assignment:"forecast","tseries", and "Kendall". Insta
 
 For each series (Total Renewable Production and Hydroelectric Consumption) create three plots arranged in a row (side-by-side): (1) time series plot, (2) ACF, (3) PACF. Use cowplot::plot_grid() to place them in a grid.
 
+```{r}
+Renewables1 <- autoplot(A3ts[,1],
+         main ="Time Series",
+         x = "Date (Monthly Data)",
+         y ="Trillion Btu")
+Renewables2 <- autoplot(Acf(A3ts[,1], lag.max = 40), main = "ACF")
+Renewables3 <- autoplot(Pacf(A3ts[,1], lag.max = 40), main = "PACF")
+cowplot::plot_grid(Renewables1, Renewables2, Renewables3, nrow = 1)
+
+Hydro1 <- autoplot(A3ts[,2],
+         main ="Time Series",
+         x = "Date (Monthly Data)",
+         y ="Trillion Btu")
+Hydro2 <- autoplot(Acf(A3ts[,2], lag.max = 40), main = "ACF")
+Hydro3 <- autoplot(Pacf(A3ts[,2], lag.max = 40), main = "PACF")
+cowplot::plot_grid(Hydro1, Hydro2, Hydro3, nrow = 1)
+```
+
 ### Q2
 
 From the plot in Q1, do the series Total Renewable Energy Production and Hydroelectric Power Consumption appear to have a trend? If yes, what kind of trend?
 
+> Answer: Total Renewabble Energy Production appears to have a positive trend. Hydroelectric Power Consumption is difficult to ascertain; there may be a slight negative trend towards the end of the time series. 
+
 ### Q3
 
 Use the *lm()* function to fit a linear trend to the two time series. Ask R to print the summary of the regression. Interpret the regression output, i.e., slope and intercept. Save the regression coefficients for further analysis.
+
+```{r}
+
+```
+
 
 ### Q4
 

@@ -57,6 +57,8 @@ colnames(energydata) <- lost_col_names
 
 head(energydata)
 str(energydata)
+write.csv(energydata, file = here("Data","Processed", "jhs_clean_energy_data.csv"))
+
 ```
 
 
@@ -69,7 +71,6 @@ tsa_prep <- energydata %>%
          TotalRenewablesProduction = `Total Renewable Energy Production`,
          HydroelectricConsumption = `Hydroelectric Power Consumption`)
 head(tsa_prep)
-
 ```
 
 
