@@ -91,7 +91,7 @@ From the plot in Q1, do the series Total Renewable Energy Production and Hydroel
 Use the *lm()* function to fit a linear trend to the two time series. Ask R to print the summary of the regression. Interpret the regression output, i.e., slope and intercept. Save the regression coefficients for further analysis.
 
 ```{r}
-
+lm1 <- lm(data=A3data, formula = )
 ```
 
 
