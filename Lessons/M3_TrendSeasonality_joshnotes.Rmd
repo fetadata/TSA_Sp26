@@ -147,7 +147,7 @@ iHP <- 3
 
 #Fit a linear trend to TS of iHP
 linear_trend_model <- lm(inflow_data[,iHP+1]~t)
-
+summary(linear_trend_model)
 # store reg coefficient
 beta0 <- as.numeric(linear_trend_model$coefficients[1]) #intercept
 beta1 <- as.numeric(linear_trend_model$coefficients[2]) #slope

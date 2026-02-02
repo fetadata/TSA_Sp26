@@ -50,7 +50,8 @@ library("here")
 energydata <- read.csv(here("Data", "Processed","jhs_clean_energy_data.csv"))
 # Selecting energy data
 A3data <- energydata %>% 
-  select(Total.Renewable.Energy.Production, Hydroelectric.Power.Consumption)
+  select(TotalRenewables = Total.Renewable.Energy.Production, 
+         HydroelectricConsumption = Hydroelectric.Power.Consumption)
 # convert to time series object
 A3ts <- ts(A3data, start = c(1973, 1), frequency = 12)
 
@@ -91,7 +92,21 @@ From the plot in Q1, do the series Total Renewable Energy Production and Hydroel
 Use the *lm()* function to fit a linear trend to the two time series. Ask R to print the summary of the regression. Interpret the regression output, i.e., slope and intercept. Save the regression coefficients for further analysis.
 
 ```{r}
-lm1 <- lm(data=A3data, formula = )
+#Vector for linear regression
+t <- c(1:nrow(A3data))
+
+# renewables regression and coefficients
+LM1 <- lm(A3data[,1]~t )
+summary(LM1)
+LM1Beta0 <- as.numeric(LM1$coefficients[1]) # Intercept
+LM1Beta1 <- as.numeric(LM1$coefficients[2]) # Slope
+
+# Hydroelectric regression and coefficients
+LM2 <- lm(A3data[,2]~t )
+summary(LM2)
+LM2Beta0 <- as.numeric(LM2$coefficients[1]) # Intercept
+LM2Beta1 <- as.numeric(LM2$coefficients[2]) # Slope
+
 ```
 
 
@@ -99,9 +114,55 @@ lm1 <- lm(data=A3data, formula = )
 
 Use the regression coefficients to detrend each series (subtract fitted linear trend). Plot detrended series and compare with the original time series from Q1. Describe what changed.
 
+```{r}
+# Detrending Renewable Data
+detrend_renewables <- A3data[,1]-(LM1Beta0+LM1Beta1*t)
+class(detrend_renewables)
+ts_detrend_renewables <- ts(detrend_renewables, frequency=12, start=c(1973,1))
+autoplot(A3ts[,1])+
+  autolayer(ts_detrend_renewables, color = "red")+
+  labs(title = "Time series comparing Original (black) and detrended (red) \nTotal Renewable Energy Production",
+       x = "Date (Monthly Data)",
+       y ="Trillion Btu")
+
+
+# Detrending Hydroelectric Data
+detrend_hydro <- A3data[,2]-(LM2Beta0+LM2Beta1*t)
+class(detrend_hydro)
+ts_detrend_hydro <- ts(detrend_hydro, frequency=12, start=c(1973,1))
+autoplot(A3ts[,2])+
+  autolayer(ts_detrend_hydro, color = "red")+
+  labs(title = "Time series comparing Original (black) and detrended (red) \nTotal Hydroelectric Energy Consumption",
+       x = "Date (Monthly Data)",
+       y ="Trillion Btu")
+```
+
+> Answer: The detrended datasets are now centered along the y = 0 line. The shape of the detrended renewables chart is much flatter now than previously; the overall shape of the hydroelectric data has not changed because there was very little trend in the data.  
+
 ### Q5
 
 Plot ACF and PACF for the detrended series and compare with the plots from Q1. You may use plot_grid() again to get them side by side to make it easier to compare. Did the plots change? How?
+
+```{r}
+# Comparing Renewables ACF & PACF from Original and Detrend
+RenewablesDetrendAcf <- autoplot(Acf(ts_detrend_renewables, lag.max = 40), main = "Detrend ACF")
+RenewablesDetrendPacf <- autoplot(Pacf(ts_detrend_renewables, lag.max = 40), main = "Detrend PACF")
+cowplot::plot_grid(Renewables2, RenewablesDetrendAcf,
+          Renewables3, RenewablesDetrendPacf,
+          nrow = 2, ncol = 2)
+
+
+# Comparing Hydroelectric ACF & PACF from Original and Detrend
+HydroDetrendAcf <- autoplot(Acf(ts_detrend_hydro, lag.max = 40), main = "Detrend ACF")
+HydroDetrendPacf <- autoplot(Pacf(ts_detrend_hydro, lag.max = 40), main = "Detrend PACF")
+cowplot::plot_grid(Hydro2, HydroDetrendAcf,
+          Hydro3, HydroDetrendPacf,
+          nrow = 2, ncol = 2)
+
+```
+
+> answer: the Renewables datagraphs change notably; most significantly, the detrended data are less significantly correlated, demonstrated by the shifted scales on the Y-axis. Additionally, the both detrended charts demonstrate more significant seasonality. On the other hand, the hydroelectric data changed very little, reflecting that trend generally plays a small role in the time variation. 
+
 
 ## Seasonal Component
 
@@ -111,16 +172,89 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 Just by looking at the time series and the acf plots, do the series seem to have a seasonal trend? No need to run any code to answer your question. Just type in you answer below.
 
-> Answer:
+> Answer: The Total Renewables data appears to demonstrate fairly regular but limited impact seasonality. The Hydroelectric data demonstrates very strong seasonality with a large magnitude of effect. 
 
 ### Q7
 
 Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) to the two time series. Ask R to print the summary of the regression. Interpret the regression output. From the results, which series have a seasonal trend? Do the results match you answer to Q6?
 
+```{r}
+# prime the dummies
+dummies <- seasonaldummy(A3ts[,1])
+nrow(dummies)
+
+#regress each series
+#renewables
+seasonalRenewables <- lm(detrend_renewables~dummies)
+summary(seasonalRenewables)
+
+#hydro
+seasonalHydro <- lm(detrend_hydro~dummies)
+summary(seasonalHydro)
+
+
+```
+
+> Answer: While the regression of Renewable Production reveals that two months imply somewhat significant seasonality, overall the model is extremely weak, with monthly seasonality explaining roughly 3% of the data. The hydroelectric data, on the other hand, reveals strong seasonality with 11 of 12 months demonstrating statistically significant correlation. Importantly, the model has a moderately strong explanatory impact, demonstrating 47% R^2 metric. 
+
+
 ### Q8
 
 Use the regression coefficients from Q7 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
 
+```{r}
+
+# Renewable deseasoning
+renewable_beta_int <- seasonalRenewables$coefficients[1]
+renewable_beta_coeff <- seasonalRenewables$coefficients[2:12]
+#Compute the seasonal component
+season_renewables_data <- array(0,nrow(A3data))
+for(i in t){
+  season_renewables_data[i] <- renewable_beta_int+renewable_beta_coeff%*%dummies[i,]
+}
+
+# removing seasonal component from series
+deseasoned_renewables <- detrend_renewables - season_renewables_data
+#convert to time series
+ts_deseasoned_renewables <- ts(deseasoned_renewables, start = c(1973, 1), frequency = 12)
+
+#plot
+cowplot::plot_grid(Renewables1, autoplot(ts_deseasoned_renewables))
+
+
+# Hydro deseasoning
+Hydro_beta_int <- seasonalHydro$coefficients[1]
+Hydro_beta_coeff <- seasonalHydro$coefficients[2:12]
+#Compute the seasonal component
+season_Hydro_data <- array(0,nrow(A3data))
+for(i in t){
+  season_Hydro_data[i] <- Hydro_beta_int+Hydro_beta_coeff%*%dummies[i,]
+}
+
+# removing seasonal component from series
+deseasoned_Hydro <- detrend_hydro - season_Hydro_data
+#convert to time series
+ts_deseasoned_Hydro <- ts(deseasoned_Hydro, start = c(1973, 1), frequency = 12)
+
+#plot
+cowplot::plot_grid(Hydro1, autoplot(ts_deseasoned_Hydro))
+
+```
+
+> Answer: Much has changed! The Renewables time series has both flattened around the Y=0 line as well as lst some of the minute seasonal changes. The Hydroelectric time series demonstrates a much smoother, less jittery chart. We can almost detect curves to the data rather than erratic oscillations. 
+
 ### Q9
 
 Plot ACF and PACF for the deseason series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. Did the plots change? How?
+
+```{r}
+cowplot::plot_grid(Renewables2, autoplot(Acf(ts_deseasoned_renewables, lag.max = 40)),
+                   Renewables3, autoplot(Pacf(ts_deseasoned_renewables, lag.max = 40)),
+                   nrow = 2, ncol = 2)
+
+cowplot::plot_grid(Hydro2, autoplot(Acf(ts_deseasoned_Hydro, lag.max = 40)),
+                   Hydro3, autoplot(Pacf(ts_deseasoned_Hydro, lag.max = 40)),
+                   nrow = 2, ncol = 2)
+```
+
+> Answer: The total renewables time series did not change significantly, but we note that the PACF becomes insignificant much more quickly with deseasoned data than in the original time series. The hydroelectric ACF looks remarkably different, with a much lower sign of seasonality and a more gradual tapering of significant lags. The PACF looks different as well, indicating that the first lag is most important, with some debatably significant lags at 3, 8 and 11. 
