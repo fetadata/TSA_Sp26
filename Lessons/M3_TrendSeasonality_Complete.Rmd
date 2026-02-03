@@ -2,6 +2,8 @@
 title: "M3: Exercise"
 author: "Luana Lima"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Setting R code chunk options
@@ -191,12 +193,12 @@ Note that blue line is our original series, red line is our trend, green line is
 
 ```{r}
 par(mfrow=c(1,2))  #place plot side by side
-Acf(ts_inflow_data[,i],lag.max=40,main=paste("Inflows HP",i,sep="")) 
-Acf(ts_detrend_inflow_data,lag.max=40,main=paste("Inflows HP",i,sep="")) 
+Acf(ts_inflow_data[,iHP],lag.max=40,main=paste("Inflows HP",iHP,sep="")) 
+Acf(ts_detrend_inflow_data,lag.max=40,main=paste("Inflows HP",iHP,sep="")) 
 
 
-Pacf(ts_inflow_data[,i],lag.max=40,main=paste("Inflows HP",i,sep=""))
-Pacf(ts_detrend_inflow_data,lag.max=40,main=paste("Inflows HP",i,sep=""))
+Pacf(ts_inflow_data[,iHP],lag.max=40,main=paste("Inflows HP",iHP,sep=""))
+Pacf(ts_detrend_inflow_data,lag.max=40,main=paste("Inflows HP",iHP,sep=""))
 
 ```
 
@@ -264,7 +266,7 @@ Pacf(ts_deseason_inflow_data,lag.max=40,main=paste("HP",iHP,sep=""))
 
 ```{r}
 #Let's choose same HP
-iHP=1 
+iHP=4
 
 #Use seasonal means model
 dummies <- seasonaldummy(ts_inflow_data[,iHP])  
@@ -325,7 +327,7 @@ Note that the two methods are equivalent but there is a slight difference in the
 Some test only work for non-seasonal data. So let's create another series with yearly averages for inflow.
 
 ```{r}
-iHP <- 1
+iHP <- 4
 #Group data in yearly steps instances
 inflow_data_matrix <- matrix(ts_inflow_data[,iHP],byrow=FALSE,nrow=12)
 inflow_data_yearly <- colMeans(inflow_data_matrix)
@@ -346,7 +348,7 @@ ggplot(inflow_data_new_yearly, aes(x=my_year, y=inflow_data_yearly)) +
 Check for deterministic trend.
 
 ```{r}
-iHP <- 1
+iHP <- 4
 #Since I have seasonal data I cannot use the simple MannKendall()
 #another example of functions that need a ts object
 SMKtest <- SeasonalMannKendall(ts_inflow_data[,iHP])
