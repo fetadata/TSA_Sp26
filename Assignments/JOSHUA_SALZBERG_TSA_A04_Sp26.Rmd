@@ -38,6 +38,7 @@ energydata <- read.csv(here("Data", "Processed","jhs_clean_energy_data.csv"))
 A4data <- energydata %>% 
   select(TotalRenewables = Total.Renewable.Energy.Production)
 
+A4ts <- ts(A4data, start = c(1973, 1), frequency = 12)
 
 ```
 
@@ -56,14 +57,35 @@ Difference the "Total Renewable Energy Production" series using function diff().
 Try differencing at lag 1 only once, i.e., make `lag=1` and `differences=1`. Plot the differenced series. Do the series still seem to have trend?
 
 ```{r}
+# difference the data
+diff1 <- diff(A4data$TotalRenewables, lag = 1, differences = 1)
+
+# make it time series data
+ts_diff1 <- ts(data = diff1, start = c(1973, 1), frequency = 12)
+
+#plot the data
+autoplot(ts_diff1)
 
 ```
 
+> answer: the series appears to have no trend. 
 
 ### Q2
 Copy and paste part of your code for A3 where you run the regression for Total Renewable Energy Production and subtract that from the original series. This should be the code for Q3 and Q4. make sure you use assign same name for the time series object that you had in A3, otherwise the code will not work.
 
 ```{r}
+#Vector for linear regression
+t <- c(1:nrow(A4data))
+
+# renewables regression and coefficients
+LM1 <- lm(A4data[,1]~t )
+summary(LM1)
+LM1Beta0 <- as.numeric(LM1$coefficients[1]) # Intercept
+LM1Beta1 <- as.numeric(LM1$coefficients[2]) # Slope
+# Detrending Renewable Data
+detrend_renewables <- A4data[,1]-(LM1Beta0+LM1Beta1*t)
+class(detrend_renewables)
+ts_detrend_renewables <- ts(detrend_renewables, frequency=12, start=c(1973,1))
 
 ```
 
@@ -75,25 +97,39 @@ Using autoplot() + autolayer() create a plot that shows the three series togethe
 What can you tell from this plot? Which method seems to have been more efficient in removing the trend?
 
 ```{r}
+# autoplot + autolayer 
+
+autoplot(ts_detrend_renewables, series = "Detrended")+
+  autolayer(ts_diff1, series = "Differenced")+
+  labs(title = "Detrending vs Differencing Renewable Energy Production",
+       x = "Time",
+       y = "Remainders")
+
 
 ```
 
-> Answer: 
+> Answer: The Detrended series retained significant peaks and valleys, signifying significant trend remains in the series; it lacks the stationarity we would hope for resulting from the process. On the other hand, the Differenced series appears completely stationary, with very strong reversion back to the y=0 line, indicating the trend has been substantially removed. 
 
 ### Q4
 Plot the ACF for the three series and compare the plots. Add the argument `ylim=c(-0.5,1)` to the autoplot() or Acf() function - whichever you are using to generate the plots - to make sure all three y axis have the same limits. Looking at the ACF which method do you think was more efficient in eliminating the trend? The linear regression or differencing?
 
 ```{r}
-
+# 3 ACF plots 
+Renewables1 <- autoplot(Acf(A4ts, lag.max = 40), ylim =c(-0.5,1))
+Renewables2 <- autoplot(Acf(ts_detrend_renewables, lag.max = 40), ylim =c(-0.5,1))
+Renewables3 <- autoplot(Acf(ts_diff1, lag.max = 40),ylim =c(-0.5,1))
+cowplot::plot_grid(Renewables1, Renewables2, Renewables3, nrow = 1)
 ```
 
-> Answer: 
+> Answer: The linear regression appears to have removed only a minute fraction of the trend, such that we are able to see that there is some seasonality, but we cannot identify the magnitude of the seasonality. On the other hand, the differencing has resulted in a series that has nearly no trend, and instead appears to largely have only seasonal peaks at regular intervals (the 12 month peak is surrounded by 2 strong negative peaks at the 11 and 13th month, etc.)
 
 ### Q5
 Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable Energy Production" series. Ask R to print the results. Interpret the results for both test. What is the conclusion from the Seasonal Mann Kendall test? What's the conclusion for the ADF test? Do they match what you observed in Q3 plot? Recall that having a unit root means the series has a stochastic trend. And when a series has stochastic trend we need to use differencing to remove the trend.
 
 ```{r}
 
+print(SeasonalMannKendall(A4ts))
+print(adf.test(A4ts))
 ```
 
 > Answer: 

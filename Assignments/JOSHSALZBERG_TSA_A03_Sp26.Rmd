@@ -30,9 +30,7 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 ## Questions
 
-Consider the same data you used for A2 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx". The data comes from the US Energy Information and Administration and corresponds to the December 2025 Monthly Energy Review. This time you will work only with the following columns: 
-**Total Renewable Energy Production**; and 
-**Hydroelectric Power Consumption**.
+Consider the same data you used for A2 from the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx". The data comes from the US Energy Information and Administration and corresponds to the December 2025 Monthly Energy Review. This time you will work only with the following columns: **Total Renewable Energy Production**; and **Hydroelectric Power Consumption**.
 
 Create a data frame structure with these two time series only.
 
@@ -85,7 +83,7 @@ cowplot::plot_grid(Hydro1, Hydro2, Hydro3, nrow = 1)
 
 From the plot in Q1, do the series Total Renewable Energy Production and Hydroelectric Power Consumption appear to have a trend? If yes, what kind of trend?
 
-> Answer: Total Renewabble Energy Production appears to have a positive trend. Hydroelectric Power Consumption is difficult to ascertain; there may be a slight negative trend towards the end of the time series. 
+> Answer: Total Renewabble Energy Production appears to have a positive trend. Hydroelectric Power Consumption is difficult to ascertain; there may be a slight negative trend towards the end of the time series.
 
 ### Q3
 
@@ -108,7 +106,6 @@ LM2Beta0 <- as.numeric(LM2$coefficients[1]) # Intercept
 LM2Beta1 <- as.numeric(LM2$coefficients[2]) # Slope
 
 ```
-
 
 ### Q4
 
@@ -137,7 +134,7 @@ autoplot(A3ts[,2])+
        y ="Trillion Btu")
 ```
 
-> Answer: The detrended datasets are now centered along the y = 0 line. The shape of the detrended renewables chart is much flatter now than previously; the overall shape of the hydroelectric data has not changed because there was very little trend in the data.  
+> Answer: The detrended datasets are now centered along the y = 0 line. The shape of the detrended renewables chart is much flatter now than previously; the overall shape of the hydroelectric data has not changed because there was very little trend in the data.
 
 ### Q5
 
@@ -161,8 +158,7 @@ cowplot::plot_grid(Hydro2, HydroDetrendAcf,
 
 ```
 
-> answer: the Renewables datagraphs change notably; most significantly, the detrended data are less significantly correlated, demonstrated by the shifted scales on the Y-axis. Additionally, the both detrended charts demonstrate more significant seasonality. On the other hand, the hydroelectric data changed very little, reflecting that trend generally plays a small role in the time variation. 
-
+> answer: the Renewables datagraphs change notably; most significantly, the detrended data are less significantly correlated, demonstrated by the shifted scales on the Y-axis. Additionally, the both detrended charts demonstrate more significant seasonality. On the other hand, the hydroelectric data changed very little, reflecting that trend generally plays a small role in the time variation.
 
 ## Seasonal Component
 
@@ -172,7 +168,7 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 Just by looking at the time series and the acf plots, do the series seem to have a seasonal trend? No need to run any code to answer your question. Just type in you answer below.
 
-> Answer: The Total Renewables data appears to demonstrate fairly regular but limited impact seasonality. The Hydroelectric data demonstrates very strong seasonality with a large magnitude of effect. 
+> Answer: The Total Renewables data appears to demonstrate fairly regular but limited impact seasonality. The Hydroelectric data demonstrates very strong seasonality with a large magnitude of effect.
 
 ### Q7
 
@@ -195,8 +191,7 @@ summary(seasonalHydro)
 
 ```
 
-> Answer: While the regression of Renewable Production reveals that two months imply somewhat significant seasonality, overall the model is extremely weak, with monthly seasonality explaining roughly 3% of the data. The hydroelectric data, on the other hand, reveals strong seasonality with 11 of 12 months demonstrating statistically significant correlation. Importantly, the model has a moderately strong explanatory impact, demonstrating 47% R^2 metric. 
-
+> Answer: While the regression of Renewable Production reveals that two months imply somewhat significant seasonality, overall the model is extremely weak, with monthly seasonality explaining roughly 3% of the data. The hydroelectric data, on the other hand, reveals strong seasonality with 11 of 12 months demonstrating statistically significant correlation. Importantly, the model has a moderately strong explanatory impact, demonstrating 47% R\^2 metric.
 
 ### Q8
 
@@ -241,7 +236,7 @@ cowplot::plot_grid(Hydro1, autoplot(ts_deseasoned_Hydro))
 
 ```
 
-> Answer: Much has changed! The Renewables time series has both flattened around the Y=0 line as well as lst some of the minute seasonal changes. The Hydroelectric time series demonstrates a much smoother, less jittery chart. We can almost detect curves to the data rather than erratic oscillations. 
+> Answer: Much has changed! The Renewables time series has both flattened around the Y=0 line as well as lst some of the minute seasonal changes. The Hydroelectric time series demonstrates a much smoother, less jittery chart. We can almost detect curves to the data rather than erratic oscillations.
 
 ### Q9
 
@@ -257,4 +252,4 @@ cowplot::plot_grid(Hydro2, autoplot(Acf(ts_deseasoned_Hydro, lag.max = 40)),
                    nrow = 2, ncol = 2)
 ```
 
-> Answer: The total renewables time series did not change significantly, but we note that the PACF becomes insignificant much more quickly with deseasoned data than in the original time series. The hydroelectric ACF looks remarkably different, with a much lower sign of seasonality and a more gradual tapering of significant lags. The PACF looks different as well, indicating that the first lag is most important, with some debatably significant lags at 3, 8 and 11. 
+> Answer: The total renewables time series did not change significantly, but we note that the PACF becomes insignificant much more quickly with deseasoned data than in the original time series. The hydroelectric ACF looks remarkably different, with a much lower sign of seasonality and a more gradual tapering of significant lags. The PACF looks different as well, indicating that the first lag is most important, with some debatably significant lags at 3, 8 and 11.
