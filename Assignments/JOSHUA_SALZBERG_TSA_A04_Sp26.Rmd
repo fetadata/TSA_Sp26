@@ -132,12 +132,23 @@ print(SeasonalMannKendall(A4ts))
 print(adf.test(A4ts))
 ```
 
-> Answer: 
+> Answer: The Seasonal Mann-Kendall has a tau value of 0.799, and a 2-sided P-value of much less than 0.05. There is sufficient evidence to reject the null hypothesis of stationarity and retain the alternate hypothesis that the series follows a trend. The Augemnted Dickey-Fuller test returned a -1.0247 metric, which corresponds to a p-value of 0.9347. As a result, we retain the null hypothesis that the series contains a unit root and thus is non-stationary. 
 
 ### Q6
 Aggregate the original "Total Renewable Energy Production" series by year. You can use the same procedure we used in class. Store series in a matrix where rows represent months and columns represent years. And then take the columns mean using function colMeans(). Recall the goal is the remove the seasonal variation from the series to check for trend. Convert the accumulates yearly series into a time series object and plot the series using autoplot().
 
 ```{r}
+# Aggregate by year and month
+energy_matrix <- matrix(A4ts,byrow=TRUE,nrow=12)
+energy_yearly <- colMeans(energy_matrix)
+
+# convert to time series
+energy_yearly_ts <- ts(energy_yearly, start= c(1973, 1), frequency = 1)
+
+y <- c(seq(length(energy_yearly)))
+
+#plotlength()#plot 
+autoplot(energy_yearly_ts)
 
 ```
 
@@ -145,7 +156,9 @@ Aggregate the original "Total Renewable Energy Production" series by year. You c
 Apply the Mann Kendall, Spearman correlation rank test and ADF. Are the results from the test in agreement with the test results for the monthly series, i.e., results for Q5?
 
 ```{r}
-
+MannKendall(energy_yearly_ts)
+cor.test(x = energy_yearly_ts, y = y, method = "spearman")
+adf.test(energy_yearly_ts)
 ```
 
-> Answer: 
+> Answer: the MannKendall test returned very similar results, but dropped slightly from 0.799 to 0.607, while retaining a very statistically significant p-value; this reaffirms the results from Q5, and we can again reject the null hypothesis, and retain the alternate hypothesis that there is a trend. The Spearman's Correlation Rank results demonstrate that there is a very statistically significant monotonic relationship, with a rho of 0.6388. The Augmented Dickey Fuller test returned similar results to the test ran in Question 5: the statistic has a very high p-value, and so we do not reject the null hypothesis that there is nonstationarity. 
