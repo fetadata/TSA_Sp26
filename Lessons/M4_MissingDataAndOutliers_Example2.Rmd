@@ -201,7 +201,7 @@ print(grubbs_test) #look at the p-value to find the decision
 chi_test <- chisq.out.test(df_inflow_random$inflow)
 print(chi_test)
 
-#both test confirm highest observation (4020.22) is an outiliwer 
+#both test confirm highest observation (4020.22) is an outlier 
 
 #If you need to remove outlier use rm.outlier()
 df_inflow_random$inflow <- rm.outlier(df_inflow_random$inflow,fill=TRUE) #using fill equal true the value will be replaced by mean or median 
