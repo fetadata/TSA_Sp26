@@ -178,7 +178,7 @@ plot(DecompSolar2)
 
 When fitting a model to this data, do you think you need all the historical data? Think about the data from 80s, 90s and early 20s. Are there any information from those years we might need to forecast the next six months of Solar and/or Wind consumption. Explain your response.
 
-> Answer:
+> Answer: The complete historical data are most likely going to obfuscate the patterns in trend, seasonality and randomness that have the greatest bearing on the next six months of consumption. Through many different policy regime changes, technological advancements, and shifting societal preferences, the landscape of energy consumption looks very different from the 80s, 90s, and even the aughts. How we prioritize energy sources has also shifted dramatically, with some consumers being willing to pay premiums for certain kinds of energy over others. Less a matter of specific shocks to the energy consumption landscape (save the spillover effects of oil/gas booms & busts), there's been a long term series of shifts. 
 
 ### Q7
 
@@ -186,9 +186,20 @@ Create a new time series object where historical data starts on January 2014. Hi
 
 ```{r}
 
+RecentData <- A5data %>% 
+  filter(year(Date) >=2014)
+
+RecentData_ts <- ts(RecentData[,2:3], start=c(2014,1), frequency = 12)
+
+RecentSolar_ts_decomp <- decompose(RecentData_ts[,1], type = 'additive')
+RecentWind_ts_decomp <- decompose(RecentData_ts[,2], type = 'additive')
+
+plot(RecentSolar_ts_decomp)
+plot(RecentWind_ts_decomp)
+
 ```
 
-> Answer:
+> Answer: In the case of solar consumption, the random component is very aligned with the seasonal component until the mid-point of the series (2020ish) and returns to alignment in 2022. In the case of wind consumption, the random component appears negatively correlated with the seasonal component, but follows a fairly consistent pattern throughout, with peaks and valleys appearing in sequence.
 
 ## Identify and Remove outliers
 
@@ -197,15 +208,44 @@ Create a new time series object where historical data starts on January 2014. Hi
 Apply the `tsclean()` to both time series object you created on Q4. Did the function removed any outliers from the series? Hint: Use `autoplot()` to check if there is difference between cleaned series and original series.
 
 ```{r}
+CleanSolar_ts <- tsclean(Solarts)
+CleanWind_ts <- tsclean(Windts)
 
+autoplot(Solarts, series = "Original")+
+  autolayer(CleanSolar_ts, series = "tsclean()")+
+  labs(title = "Comparing Original and tsclean() Solar Consumption",
+       y = "Trillion Btu",
+       x = "Time")
+
+autoplot(Windts, series = "Original")+
+  autolayer(CleanWind_ts, series = "tsclean()")+
+  labs(title = "Comparing Original and tsclean() Wind Consumption",
+       y = "Trillion Btu",
+       x = "Time")
 ```
+
+> answer: In both series we see a significant number of outlier dropped. In the solar series, the tsclean() function dropped outliers from the beginning of the data all the way through the end. The most dramatic effect is seen in the years following 2015: the tsclean() series is smoothed to mostly just a trend, while the original data has sizable peaks and troughs. In the case of the wind series, the tsclean() function removed outliers only beginning in ~2009. The series is not quite as smooth as in the solar series, but the majority of the significant peaks and troughs are removed. 
+
 
 ### Q9
 
 Redo number Q8 but now with the time series you created on Q7, i.e., the series starting in 2014. Using what `autoplot()` again what happened now? Did the function removed any outliers from the series?
 
 ```{r}
+Recent_CleanSolar_ts <- tsclean(RecentData_ts[,1])
+Recent_CleanWind_ts <- tsclean(RecentData_ts[,2])
 
+autoplot(RecentData_ts[,1], series = "Original")+
+  autolayer(Recent_CleanSolar_ts, series = "tsclean()")+
+  labs(title = "Comparing Original and tsclean() Solar Consumption \nSince 2014",
+       y = "Trillion Btu",
+       x = "Time")
+autoplot(RecentData_ts[,2], series = "Original")+
+  autolayer(Recent_CleanWind_ts, series = "tsclean()")+
+  labs(title = "Comparing Original and tsclean() Wind Consumption \nSince 2014",
+       y = "Trillion Btu",
+       x = "Time")
 ```
 
-> Answer:
+> Answer: The solar series had some outliers removed, corresponding to the troughs in the winters of 2024 and 2025. The wind series did not appear to have any outlier removed. This is significantly different from the previous exercise.
+
