@@ -153,7 +153,7 @@ Solarts <- ts(A5data$SolarEnergy, start = c(1984, 1), frequency = 12)
 DecompWind <- decompose(Windts, type = "additive")
 DecompSolar <- decompose(Solarts, type = "additive")
 
-plot(DecompWind)
+autoplot(DecompWind)
 plot(DecompSolar)
 ```
 
@@ -168,8 +168,8 @@ Use the decompose function again but now change the type of the seasonal compone
 DecompWind2 <- decompose(Windts, type = "multiplicative")
 DecompSolar2 <- decompose(Solarts, type = "multiplicative")
 
-plot(DecompWind2)
-plot(DecompSolar2)
+autoplot(DecompWind2)
+autoplot(DecompSolar2)
 ```
 
 > Answer: The Wind series random component truly seems to capture the randoness and irregularity of the data, particularly in the early portion of the series. Significantly less seasonality remains in the latter third of the plot. The solar plot is similar, there's intense randomness until about 1988 or 1989, and then a minute amount of seasonality remains. In both cases, the y-axis shifts from being centered on the 0-line to being centered on the 1-line. 
@@ -194,8 +194,8 @@ RecentData_ts <- ts(RecentData[,2:3], start=c(2014,1), frequency = 12)
 RecentSolar_ts_decomp <- decompose(RecentData_ts[,1], type = 'additive')
 RecentWind_ts_decomp <- decompose(RecentData_ts[,2], type = 'additive')
 
-plot(RecentSolar_ts_decomp)
-plot(RecentWind_ts_decomp)
+autoplot(RecentSolar_ts_decomp)
+autoplot(RecentWind_ts_decomp)
 
 ```
 
