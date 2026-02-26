@@ -317,7 +317,11 @@ Now that you have played with different order, let's try the auto.arima() functi
 
 ```{r}
 
-Model_autofit <- auto.arima(deseasonal_residential_price,max.D=0,max.P = 0,max.Q=0,approximation = TRUE)
+Model_autofit <- auto.arima(deseasonal_residential_price,
+                            max.D=0,
+                            max.P = 0,
+                            max.Q=0,
+                            approximation = TRUE)
 print(Model_autofit)
 compare_aic <- cbind(compare_aic,Model_autofit$aic)
 

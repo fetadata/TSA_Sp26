@@ -1,7 +1,7 @@
 ---
 title: "ENV 797 - Time Series Analysis for Energy and Environment Applications | Spring 2026"
 subtitle: "Assignment 6 - Due date 02/27/26"
-author: "Student Name"
+author: "Josh Salzberg"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -20,7 +20,10 @@ R packages needed for this assignment: "ggplot2", "forecast", "tseries" and "sar
 
 ```{r}
 #Load/install required package here
-
+#install.packages("sarima")
+libraries <- c("tidyverse", "forecast","tseries","sarima", "here")
+lapply(libraries, require, character.only=TRUE)
+here()
 
 ```
 
@@ -30,13 +33,13 @@ This assignment has general questions about ARIMA Models.
 
 Describe the important characteristics of the sample autocorrelation function (ACF) plot and the partial sample autocorrelation function (PACF) plot for the following models:
 
-* AR(2)
+-   AR(2)
 
-> Answer:
+> Answer: The ACF plot of an AR(2) series would demonstrate a slow decay, while the PACF plot would show 2 significant lags. 
 
-* MA(1)
+-   MA(1)
 
-> Answer:
+> Answer: the ACF plot of an MA(1) series would show one significant lag, and a long tail in the PACF. 
 
 ## Q2
 
@@ -45,11 +48,10 @@ Recall that the non-seasonal ARIMA is described by three parameters ARIMA$(p,d,q
 (a) Consider three models: ARMA(1,0), ARMA(0,1) and ARMA(1,1) with parameters $\phi=0.6$ and $\theta= 0.9$. The $\phi$ refers to the AR coefficient and the $\theta$ refers to the MA coefficient. Use the `arima.sim()` function in R to generate $n=100$ observations from each of these three models. Then, using `autoplot()` plot the generated series in three separate graphs.
 
 ```{r}
-
+sim1 <- 
 ```
 
 (b) Plot the sample ACF for each of these models in one window to facilitate comparison (Hint: use `cowplot::plot_grid()`).
-
 
 ```{r}
 
@@ -85,8 +87,7 @@ Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
 
 ## Q4
 
-Simulate a seasonal ARIMA$(0, 1)\times(1, 0)_{12}$ model with $\phi =0 .8$ and $\theta = 0.5$ using the `sim_sarima()` function from package `sarima`. The $12$ after the bracket tells you that $s=12$, i.e., the seasonal lag is 12, suggesting monthly data whose behavior is repeated every 12 months. You can generate as many observations as you like. Note the Integrated part was omitted. It means the series do not need differencing, therefore $d=D=0$. Plot the generated
-series using `autoplot()`. Does it look seasonal?
+Simulate a seasonal ARIMA$(0, 1)\times(1, 0)_{12}$ model with $\phi =0 .8$ and $\theta = 0.5$ using the `sim_sarima()` function from package `sarima`. The $12$ after the bracket tells you that $s=12$, i.e., the seasonal lag is 12, suggesting monthly data whose behavior is repeated every 12 months. You can generate as many observations as you like. Note the Integrated part was omitted. It means the series do not need differencing, therefore $d=D=0$. Plot the generated series using `autoplot()`. Does it look seasonal?
 
 ```{r}
 
