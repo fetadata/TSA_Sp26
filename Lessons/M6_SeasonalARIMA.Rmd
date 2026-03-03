@@ -122,6 +122,7 @@ deseasonal_residential_price <- seasadj(decompose_residential_price)
 n_diff <- ndiffs(deseasonal_residential_price)
 cat("Number of differencing needed: ",n_diff)
 
+
 #Lets difference the series once at lag 1 to remove the trend.
 deseasonal_residential_price_diff <- diff(deseasonal_residential_price,differences=1,lag=1)
 
@@ -142,7 +143,10 @@ plot_grid(
   autoplot(Acf(deseasonal_residential_price_diff, lag = 40, plot=FALSE),  
                   main = "Diff/Deseason Residential Electricity Price"),
   nrow=1
+  
 )
+
+autoplot(ts_electricity_price)
 
 #Comparing PACFs
 plot_grid(
@@ -223,8 +227,17 @@ Look at the twice differenced series to identify model order.
 ## Manually fitting seasonal ARIMA to original series
 
 ```{r}
+arima1 <- Arima(ts_electricity_price[,"Residential"], order = c(0,1,1), seasonal = c(0,1,1))
+print(arima1)
+compareaic <- data.frame(arima1$aic)
 
 
+arima1 <- Arima(ts_electricity_price[,"Residential"], order = c(1,1,1), seasonal = c(0,1,1))
+print(arima2)
+
+checkresiduals(arima1)
+checkresiduals(arima2)
+compareaic <- data.frame(compareaic, arima2$aic)
 
 ```
 
@@ -232,8 +245,10 @@ Look at the twice differenced series to identify model order.
 
 ```{r}
 
-
-
+model_autofit <- auto.arima(ts_electricity_price[,"Residential"],
+                             approximation = T)
+print(model_autofit)
+compareaic <- data.frame(compareaic, model_autofit$aic)
 
 ```
 
@@ -243,8 +258,14 @@ Look at the twice differenced series to identify model order.
 Recall from M6 that the best fit for the non-seasonal time series is a ARIMA(1,1,2) with drift.
 
 ```{r}
+model_autofit_nonseas <- auto.arima(deseasonal_residential_price,
+                                    max.D = 0,
+                                    max.P= 0,
+                                    max.Q = 0,
+                             approximation = T)
 
-
+print(model_autofit_nonseas)
+compareaic <- data.frame(compareaic, model_autofit_nonseas$aic)
 
 ```
 
