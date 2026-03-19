@@ -122,6 +122,7 @@ On "M7_Intro_Forecasting.Rmd" we tried several models for both seasonal and dese
 
 ```{r}
 MEAN_seas <- meanf(y = ts_electricity_price[,"All.sectors"], h = 12)
+summary(MEAN_seas)
 checkresiduals(MEAN_seas)
 ```
 
@@ -139,6 +140,7 @@ checkresiduals(SNAIVE_seas)
 ### Model 3: SARIMA
 ```{r}
 SARIMA_autofit <- auto.arima(ts_electricity_price[,"All.sectors"])
+summary(SARIMA_autofit)
 checkresiduals(SARIMA_autofit)
 ```
 
@@ -225,7 +227,19 @@ kbl(seas_scores,
 Create a code that plots all forecasted values and observed values together.
 
 ```{r}
+ts_electricity_price <- ts(
+  electricity_price_processed[1:(nobs),"All.sectors"],
+  start=c(year(electricity_price_processed$Month[1]),month(electricity_price_processed$Month[1])),
+  frequency=12) 
+autoplot(ts_electricity_price)+
+  autolayer(MEAN_seas$mean, series = "Mean")+
+  autolayer(SNAIVE_seas$mean, series = "Seasonal Naive")+
+  autolayer(SARIMA_for$mean)
 
 
+autoplot(ts_electricity_price[(nobs-n_for+1):nobs])+
+  autolayer(MEAN_seas$mean, series = "Mean")+
+  autolayer(SNAIVE_seas$mean, series = "Seasonal Naive")+
+  autolayer(SARIMA_for$mean)
 ```
 
