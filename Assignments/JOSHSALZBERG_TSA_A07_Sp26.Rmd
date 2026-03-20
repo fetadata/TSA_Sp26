@@ -22,7 +22,7 @@ Packages needed for this assignment: "forecast","tseries". Do not forget to load
 
 ```{r}
 #Load/install required package here
-libraries <- c('forecast','tseries', 'here', 'dplyr')
+libraries <- c('forecast','tseries', 'here', 'dplyr','lubridate')
 lapply(libraries,require,character.only=T)
 here()
 ```
@@ -40,6 +40,7 @@ Import the csv file and create a time series object for natural gas. Make you su
 rawdata <- read.csv(file = here('Data',"Net_generation_United_States_all_sectors_monthly.csv"), skip = 4, header = T)
 gasdata <- rawdata %>% 
   select(Month,natural.gas.thousand.megawatthours) %>% 
+  mutate(Month = my(Month)) %>% 
   arrange(Month)
 
 gas_ts <- ts(gasdata[,2], start = c(2001,4),frequency =12)
@@ -54,16 +55,19 @@ pacf_base <- autoplot(Pacf(gas_ts, lag.max = 48))
 Using the $decompose()$ and the $seasadj()$ functions create a series without the seasonal component, i.e., a deseasonalized natural gas series. Plot the deseasonalized series over time and corresponding ACF and PACF. Compare with the plots obtained in Q1.
 
 ```{r}
-gas_decomp <- decompose(gas_ts, type= "additive")
-acf_decomp <- autoplot(Acf(gas_decomp$random, lag.max = 48))
-pacf_decomp <- autoplot(Pacf(gas_decomp$random, lag.max = 48))
+gas_decomp <- decompose(gas_ts)
+plot(gas_decomp)
 
-cowplot::plot_grid(acf_base, acf_decomp, pacf_base,pacf_decomp, ncol = 2, nrow = 2)
+gas_deseas <- seasadj(gas_decomp)
+autoplot(gas_deseas)
+acf_deseas <- autoplot(Acf(gas_deseas, lag.max = 48))
+pacf_deseas <- autoplot(Pacf(gas_deseas, lag.max = 48))
 
-gas_seasadj_decomp <- seasadj(gas_decomp)
-autoplot(Acf(gas_seasadj_decomp, lag.max = 48))
-autoplot(Pacf(gas_seasadj_decomp, lag.max = 48))
+checkresiduals(gas_deseas)
+cowplot::plot_grid(acf_base, acf_deseas, pacf_base,pacf_deseas, ncol = 2, nrow = 2)
 ```
+
+>Answer: We see that the ACF has transformed from strongly seasonal series to a very long decay exceeding 48 lags. The PACF on the other hand, has "cleaned up" and now demonstrates only 1 very strong lag. 
 
 ## Modeling the seasonally adjusted (i.e., the deseasonalized series)
 
@@ -72,8 +76,12 @@ autoplot(Pacf(gas_seasadj_decomp, lag.max = 48))
 Run the ADF test and Mann Kendall test on the deseasonalized data from Q2. Report and explain the results.
 
 ```{r}
+print(adf.test(gas_deseas, alternative = "stationary"))
 
+print(summary(Kendall::MannKendall(gas_deseas)))
 ```
+>Answer: The Dickey-Fuller test statistic was -4.027 with a p-value equal to 0.01; thus we reject the null hypothesis and accept the alternative hypothesis that the series lacks a unit root. The MannKendall test returned a 2-sided p-value =< 2.22e-16. Thus we accept the alternative hypothesis that there is a statistically significant monotonic trend.
+
 
 ### Q4
 
@@ -81,19 +89,36 @@ Using the plots from Q2 and test results from Q3 identify the ARIMA model parame
 
 ```{r}
 
+ndiffs(gas_deseas) # supports 
+
 ```
+>Answer: 1 immediate cutoff in PACF -> assume Autoregressive component p = 1
+Lacks unit root structure according to ADF test, but the persistence in AR indicates we will need d = 1
+This is supported by ndiffs() function returning a 1
+ACF's slow decay does not support clear MA component, so  q = 0
+#Propose model ARIMA(1,1,0)
+
 
 ### Q5
 
 Use `Arima()` from package "forecast" to fit an ARIMA model to your series considering the order estimated in Q4. You should allow constants in the model, i.e., `include.mean = TRUE` or `include.drift=TRUE`. **Print the coefficients** in your report. Hint: use the `cat()` or `print()` function to print.
 
 ```{r}
+gas_110 <- Arima(gas_deseas, order = c(1,1,0), include.drift = T)
+
+cat("The coefficients of the ARIMA(1,1,0) model are", print(gas_110$coef))
+# Unfortunately the Ljung-Box score is really terrible for this model
 
 ```
 
 ### Q6
 
 Now plot the residuals of the ARIMA fit from Q5 along with residuals ACF on the same window. You may use the $checkresiduals()$ function to get the plots. Do the residual series look like a white noise series? Why?
+```{r}
+checkresiduals(gas_110) 
+
+```
+> answer: The residuals appear like a white noise series - the residuals cycle around the 0 line and there's no clear patterns. The ACF shows no surprisingly significant lags. It appears the residuals are *i.i.d.* 
 
 ## Modeling the original series (with seasonality)
 
@@ -102,8 +127,34 @@ Now plot the residuals of the ARIMA fit from Q5 along with residuals ACF on the 
 Repeat Q3-Q6 for the original series (the complete series that has the seasonal component). Note that when you model the seasonal series, you need to specify the seasonal part of the ARIMA model as well, i.e., $P$, $D$ and $Q$.
 
 ```{r}
+print(adf.test(gas_ts, alternative = "stationary"))
+# No unit root present
+
+print(summary(Kendall::MannKendall(gas_ts)))
+# There is a monotonic trend
+ 
+ndiffs(gas_ts)  # Returned 1
+nsdiffs(gas_ts, frequency(12)) # returned 1
+
+# We know there is a strong seasonal component, and a high persistence, so can assume both d = 1 & D = 1, 
+# but uncertain the seasonal P & Q
+gas_110010 <- Arima(gas_ts, order = c(1,1,0), seasonal = c(0,1,0))
+checkresiduals(gas_110010)
+Acf(gas_110010$residuals)
+Pacf(gas_110010$residuals)
+# moderately strong negative at lag 12 and weak negative at lag 24 - supports adding Q = 1
+
+gas_110011 <- Arima(gas_ts, order = c(1,1,0), seasonal = c(0,1,1))
+checkresiduals(gas_110011)
+Acf(gas_110011$residuals)
+Pacf(gas_110011$residuals) 
+# ACF & PACF are neat & tidy now - no significant lags! 
+
+compare_new_aic <- data.frame(gas_110$aic, gas_110010$aic, gas_110011$aic) 
+# AIC supports our conclusion that SARIMA(1,1,0)(0,1,1) is an improvement! 
 
 ```
+
 
 
 ### Q8
@@ -111,8 +162,15 @@ Repeat Q3-Q6 for the original series (the complete series that has the seasonal 
 Compare the residual series for Q7 and Q6. Can you tell which ARIMA model is better representing the Natural Gas Series? Is that a fair comparison? Explain your response.
 
 ```{r}
+checkresiduals(gas_110)
+checkresiduals(gas_110011)
+
+cowplot::plot_grid(autoplot(Acf(gas_110$residuals)), autoplot(Acf(gas_110011$residuals)),
+                   autoplot(Pacf(gas_110$residuals)),autoplot(Pacf(gas_110011$residuals)), ncol = 2, nrow = 2)
 
 ```
+
+> Answer: the ARIMA(1,1,0) residuals appear like white noise at first glance, but the ACF and PACF each have some lags that start to approach significance. On the other hand, ARIMA(1,1,0)(0,1,1) has ACF & PACF plots that generally look much neater and contained within the insignificance threshold. I'm slightly nervous that perhaps I've over-differenced the data with the ARIMA(1,1,0)(0,1,1), but I Think it's okay?
 
 
 ## Checking your model with the auto.arima()
@@ -124,15 +182,15 @@ Compare the residual series for Q7 and Q6. Can you tell which ARIMA model is bet
 Use the $auto.arima()$ command on the **deseasonalized series** to let R choose the model parameter for you. What's the order of the best ARIMA model? Does it match what you specified in Q4?
 
 ```{r}
-
+auto.arima(gas_deseas)
 ```
-
+> Answer: auto.arima indicates that ARIMA(1,1,1) with drift is the best model. I missed the Moving Average component! 
 
 ### Q10
 
 Use the $auto.arima()$ command on the **original series** to let R choose the model parameters for you. Does it match what you specified in Q7?
 
 ```{r}
-
+auto.arima(gas_ts)
 ```
-
+> answer: the auto.arima function has selected ARIMA(1,0,0)(0,1,1) with drift. It appears that I likely did actually over-difference the series. It's interesting that the seasonal component takes care of moving average part identified in Question 9. 
