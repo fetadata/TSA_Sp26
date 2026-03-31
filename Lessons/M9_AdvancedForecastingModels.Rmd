@@ -248,7 +248,7 @@ ts_act_power_daily_train <- subset(ts_act_power_daily,
 
 #create a subset for testing purpose
 ts_act_power_daily_test <- subset(ts_act_power_daily,
-                                   start = length(ts_act_power_daily)-n_for)
+                                   start = length(ts_act_power_daily)-n_for+1)
 
 autoplot(ts_act_power_daily_train)
 autoplot(ts_act_power_daily_test)
@@ -381,7 +381,7 @@ For seasonal data, the fitted model is called an NNAR(p,P,k)[m] model, which is 
 NN_fit <- nnetar(ts_act_power_daily_train,
                  p=1,
                  P=0,
-                 xreg=fourier(ts_act_power_daily_train, K=c(2,12))))
+                 xreg=fourier(ts_act_power_daily_train, K=c(2,12)))
 
 #NN_for <- forecast(NN_fit, h=365) 
 NN_for <- forecast(NN_fit, 
